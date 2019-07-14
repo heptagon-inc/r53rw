@@ -1,1 +1,11 @@
--e .
+aws_cdk.core
+aws_cdk.aws_s3
+aws_cdk.aws_s3_assets
+aws_cdk.aws_cloudtrail
+aws_cdk.aws_logs
+aws_cdk.aws_events
+aws_cdk.aws_events_targets
+aws_cdk.aws_codebuild
+aws_cdk.aws_iam
+aws_cdk.aws_lambda
+boto3
