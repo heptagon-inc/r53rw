@@ -15,15 +15,43 @@ SLACK_API_TOKEN = response['Parameter']['Value']
 slack_client = slack.WebClient(token=SLACK_API_TOKEN)
 
 
-def lambda_handler(event, context):
+def diff_notice(event, context):
+    print(event)
     messages = {
         'channel': '#_notice_ops',
-        'text': 'CodeBuild Notification',
+        'text': 'R53RW Notification',
         'username': 'api.cloud3rs.io',
         'icon_emoji': ':dart:',
         'attachments': [
             {
                 'color': '#808080',
+                'blocks': [
+                    {
+                        'type': 'section',
+                        'text': {
+                            'type': 'mrkdwn',
+                            'text': f"{event['detail']['requestParameters']}"
+                        }
+                    },
+                ]
+            }
+        ]
+    }
+    resp = slack_client.chat_postMessage(**messages)
+    print(resp)
+    return True
+
+
+def codebuild_alert(event, context):
+    print(event)
+    messages = {
+        'channel': '#_notice_ops',
+        'text': 'R53RW CodeBuild Alert',
+        'username': 'api.cloud3rs.io',
+        'icon_emoji': ':dart:',
+        'attachments': [
+            {
+                'color': '#ff4500',
                 'blocks': [
                     {
                         'type': 'section',

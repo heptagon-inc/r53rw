@@ -56,18 +56,36 @@ class R53RwStack(core.Stack):
             cloud_watch_logs_retention=logs.RetentionDays.ONE_WEEK,
         )
 
-        func = lambda_.Function(
+        func_diff_notice = lambda_.Function(
             self,
-            ID+'-func',
-            code=lambda_.Code.asset('./function/'),
-            handler='app.lambda_handler',
+            ID+'-func_diff_notice',
+            code=lambda_.Code.asset('./functions/artifacts/'),
+            handler='app.diff_notice',
             runtime=lambda_.Runtime.PYTHON_3_7,
             log_retention=logs.RetentionDays.ONE_MONTH,
             memory_size=128,
             timeout=core.Duration.seconds(60),
             tracing=lambda_.Tracing.ACTIVE
         )
-        func.add_to_role_policy(
+        func_diff_notice.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=['ssm:GetParameter'],
+                resources=['*'],
+            )
+        )
+
+        func_codebuild_alert = lambda_.Function(
+            self,
+            ID+'-func_codebuild_alert',
+            code=lambda_.Code.asset('./functions/artifacts/'),
+            handler='app.codebuild_alert',
+            runtime=lambda_.Runtime.PYTHON_3_7,
+            log_retention=logs.RetentionDays.ONE_MONTH,
+            memory_size=128,
+            timeout=core.Duration.seconds(60),
+            tracing=lambda_.Tracing.ACTIVE
+        )
+        func_codebuild_alert.add_to_role_policy(
             iam.PolicyStatement(
                 actions=['ssm:GetParameter'],
                 resources=['*'],
@@ -116,9 +134,9 @@ class R53RwStack(core.Stack):
                 resources=['*'],
             )
         )
-        codebuild_project.on_build_started(ID+'-rule-on_build_started', target=targets.LambdaFunction(func))
-        codebuild_project.on_build_failed(ID+'-rule-on_build_failed', target=targets.LambdaFunction(func))
-        codebuild_project.on_build_succeeded(ID+'-rule-on_build_succeeded', target=targets.LambdaFunction(func))
+        codebuild_project.on_build_failed(
+            ID+'-rule-on_build_failed',
+            target=targets.LambdaFunction(func_codebuild_alert))
 
         rule = events.Rule(
             self,
@@ -146,4 +164,5 @@ class R53RwStack(core.Stack):
                 },
             },
         )
+        rule.add_target(targets.LambdaFunction(func_diff_notice))
         rule.add_target(targets.CodeBuildProject(codebuild_project))

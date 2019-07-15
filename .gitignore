@@ -3,3 +3,4 @@
 .mypy_cache/
 cdk.out/
 __pycache__/
+functions/artifacts/
